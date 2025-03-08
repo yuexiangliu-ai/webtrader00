@@ -179,4 +179,11 @@ Your deployed page will likely be blank because it's missing a few files during 
     > - Have api key ready from deriv app account in order to register
     > - Make note of your App ID to update in redmine card
 
+### Docker build
+docker build -t webtrader00:latest .
+docker run -p 9001:9001 -p 8081:8081 webtrader00:latest
+docker login
+docker tag webtrader00:latest your_dockerhub_username/webtrader00:latest
+docker push your_dockerhub_username/webtrader00:latest
+
 
