@@ -269,7 +269,7 @@ require(["jquery", "text!i18n/" + i18n_name + ".json"], function($, lang_json) {
               });
         };
         
-        require(["navigation/navigation", "websockets/binary_websockets", "jquery-ui", "css!main.css","css!binary-style"], function(navigation, websockets) {
+        require(["navigation/navigation", "websockets/binary_websockets", "jquery-ui", "css!main.css", "css!binary-style"], function(navigation, websockets) {
             var shouldRedirectMf = function(client_country, auth) {
                 var account_list = auth.account_list;
                 var residence_country = auth.country;
@@ -283,51 +283,63 @@ require(["jquery", "text!i18n/" + i18n_name + ".json"], function($, lang_json) {
                         return;
                     }
                 });
-                return (has_mf_mx_mlt || ((isEuCountrySelected(client_country) || isEuCountrySelected(residence_country)) && account_list.length == 1))
-            }
+                return (has_mf_mx_mlt || ((isEuCountrySelected(client_country) || isEuCountrySelected(residence_country)) && account_list.length == 1));
+            };
+        
             var showMainContent = function () {
                 navigation.init(registerMenusCallback);
-        
-                /* initialize the top menu because other dialogs
-                 * will assume an initialized top menu */
                 $("#menu").menu();
-    
-                //Trigger async loading of instruments and trade menu and refresh
                 require(["instruments/instruments", "trade/tradeMenu", "jquery-growl"], function(instruments, trade) {
                     $.growl.notice({ message: "Loading chart and trade menus ...".i18n() });
-    
                     instruments.init();
                     trade.init();
                 });
-    
-                //Trigger async loading of window sub-menu
                 require(["windows/windows"], function(windows) {
                     var $windowsLI = $("#nav-menu .windows");
                     windows.init($windowsLI);
-                    // hide the main loading spinner,
-                    // after the `last module` has been loaded.
                     $(".sk-spinner-container").parent().hide();
                     $("body > .footer").show();
                 });
-    
                 require(["banners/banners"], function(banner) {
                     banner.init();
                 });
             };
-
+        
             websockets
-            .send({ website_status: 1 })
-            .then(function(data) {
-                var client_country = data.website_status.clients_country;
-                if (!local_storage.get('oauth')) {
-                    window.location.href = moveToDerivUrl();
-                } else {
-                    websockets.cached.authorize().then(function(auth) {
+                .send({ website_status: 1 })
+                .then(function(data) {
+                    var client_country = data.website_status.clients_country;
+                    if (!local_storage.get('oauth')) {
                         window.location.href = moveToDerivUrl();
-                    })
-                }
-                
-            })
+                    } else {
+                        websockets.cached.authorize()
+                            .then(function(auth) {
+                                if (window.location.hostname === 'localhost' || !shouldRedirectMf(client_country, auth)) {
+                                    console.log('Authorization successful, showing main content');
+                                    showMainContent();
+                                } else {
+                                    window.location.href = moveToDerivUrl();
+                                }
+                            })
+                            .catch(function(err) {
+                                console.error('Authorize failed:', err);
+                                if (window.location.hostname === 'localhost') {
+                                    console.log('Forcing main content for localhost despite error');
+                                    showMainContent(); // Proceed anyway for testing
+                                } else {
+                                    window.location.href = moveToDerivUrl();
+                                }
+                            });
+                    }
+                })
+                .catch(function(err) {
+                    console.error('Website status failed:', err);
+                    if (window.location.hostname === 'localhost') {
+                        showMainContent(); // Fallback for localhost
+                    } else {
+                        window.location.href = moveToDerivUrl();
+                    }
+                });
         });
 
         /*Trigger T&C check, self-exclusion, reality check, csr_tax_information check*/

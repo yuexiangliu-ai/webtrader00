@@ -6,6 +6,18 @@ var footer_non_eu_el = document.getElementById('footer-non-eu');
 var href = window.location.href;
 var default_app_id = 11;
 
+
+// Simulate OAuth token for local development
+if (window.location.hostname === 'localhost') {
+    local_storage.set('oauth', [{
+        id: 'CR123',
+        token: 'mockToken123',
+        currency: 'USD'
+    }]);
+    local_storage.set('oauth-login', { value: true }); // Trigger oauth-login event
+    console.log('Mock OAuth token set for localhost');
+}
+
 // Remove the '#' check later once the backend changes are released TODO
 var params_str = href.indexOf('#') != -1 ? href.split('#')[1] : href.split('?')[1];
 var lang = (params_str && params_str.match(/lang=[a-zA-Z]+/g) || []).map(function (val) { return val.split('=')[1] })[0] ||
@@ -24,14 +36,21 @@ checkWindowSize();
 processPageLanguage();
 
 function loadAppId(callback) {
-    $.getJSON(VERSION + 'oauth/app_id.json').then(function (app_id_json) {
-        callback(false, app_id_json);
-    }).catch(function (err) {
-        callback(err);
-    });
+    if (window.location.hostname === 'localhost') {
+        callback(false, { 'localhost': 11 });
+    } else {
+        $.getJSON(VERSION + 'oauth/app_id.json').then(function (app_id_json) {
+            callback(false, app_id_json);
+        }).catch(function (err) {
+            callback(err);
+        });
+    }
 }
 
 function getUrl() {
+    if (window.location.hostname === 'localhost') {
+        return 'ws://localhost:8081'; // Use mock server
+    }
     var server_url = localStorage.getItem('config.server_url') || 'red.binaryws.com';
     return 'wss://' + server_url + '/websockets/v3';
 }
@@ -41,23 +60,24 @@ function processRedirect(selected_language_name) {
         var client_country;
         var account_list;
         var app_id = err ? default_app_id : getAppId(app_id_json);
+
         var api_url = getUrl() + '?l=' + selected_language_name + '&app_id=' + app_id + '&brand=binary';
         var ws = new WebSocket(api_url);
         ws.onopen = sendWebsiteStatus;
         ws.onmessage = processApiResponse;
+        ws.onerror = function(err) {
+            console.error('WebSocket error:', err);
+        };
 
         function getAppId(app_id_json) {
             var stored_app_id = '';
-
-            for(var url in app_id_json) {
-                if(href.lastIndexOf(url, 0) === 0) {
+            for (var url in app_id_json) {
+                if (href.lastIndexOf(url, 0) === 0) {
                     stored_app_id = app_id_json[url];
                 }
             }
-
             return stored_app_id || default_app_id;
         }
-        getUrl();
 
         function sendApiRequest(request) {
             ws.send(JSON.stringify(request));
@@ -74,7 +94,7 @@ function processRedirect(selected_language_name) {
         function processApiResponse(response) {
             var data = JSON.parse(response.data);
 
-            if(data.website_status){
+            if (data.website_status) {
                 client_country = data.website_status.clients_country;
                 if (local_storage.get('oauth')) {
                     var token = local_storage.get('oauth')[0].token;
@@ -82,23 +102,32 @@ function processRedirect(selected_language_name) {
                 } else {
                     window.location.href = moveToDerivUrl();
                 }
-            } else if (data.authorize){
+            } else if (data.authorize) {
                 account_list = data.authorize.account_list;
                 var has_mf_mx_mlt = false;
-                for (var account in account_list){
-                    if (account.landing_company_name === 'maltainvest' 
-                        || account.landing_company_name === 'malta' 
-                        || account.landing_company_name === 'iom')
-                    {
+                for (var account in account_list) {
+                    if (
+                        account.landing_company_name === 'maltainvest' ||
+                        account.landing_company_name === 'malta' ||
+                        account.landing_company_name === 'iom'
+                    ) {
                         has_mf_mx_mlt = true;
-                        return;
+                        break;
                     }
                 }
-                window.location.href = moveToDerivUrl();
+                if (!has_mf_mx_mlt && window.location.hostname !== 'localhost') {
+                    window.location.href = moveToDerivUrl();
+                } else {
+                    console.log('Authorization successful or mocked for localhost');
+                    // Hide loading spinner and show main content
+                    $('#loading_container').hide();
+                    $('#main_container').show();
+                }
             }
         }
-    })
+    });
 }
+
 function processPageLanguage() {
     var selected_language_name = (window.local_storage.get('i18n') || { value: 'en' }).value;
 
@@ -175,6 +204,15 @@ function setTime() {
 }
 
 function openTradingPage() {
+    if (window.location.hostname === 'localhost') {
+        console.log('Opening trading page with mock token');
+        local_storage.set('oauth', [{
+            id: 'CR123',
+            token: 'mockToken123',
+            currency: 'USD'
+        }]);
+        local_storage.set('oauth-login', { value: true });
+    }
     window.location.href = VERSION + 'main.html';
 }
 

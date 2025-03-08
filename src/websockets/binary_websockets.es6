@@ -35,6 +35,9 @@ const get_app_id = () => {
 const get_server_url = () => localStorage.getItem('config.server_url') || 'red.binaryws.com';
 
 const get_socket_url = () => {
+   if (window.location.hostname === 'localhost') {
+       return 'ws://localhost:8081';
+   }
    const server_url = get_server_url();
    return `wss://${server_url}/websockets/v3`;
 };
