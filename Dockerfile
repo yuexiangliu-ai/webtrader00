@@ -29,5 +29,5 @@ RUN yarn build
 # Expose ports (9001 for Webtrader, 8081 for WebSocket)
 EXPOSE 9001 8081
 
-# Start both the Webtrader app and mock WebSocket server from v2.2.8
-CMD ["sh", "-c", "http-server v2.2.8 -p 9001 & node mock_websocket.js"]
+# Start both the Webtrader app and mock WebSocket server, set main.html as default
+CMD ["sh", "-c", "http-server v2.2.8 -p 9001 --index main.html & node mock_websocket.js"]
