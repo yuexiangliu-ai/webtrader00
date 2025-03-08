@@ -188,3 +188,5 @@ docker push your_dockerhub_username/webtrader00:latest
 docker stop webtrader00 2>/dev/null || true && docker rm webtrader00 2>/dev/null || true && docker run -p 9001:9001 -p 8081:8081 --name webtrader00 webtrader00:latest
 docker run -it --entrypoint /bin/bash webtrader00:latest
 ls -la /app/v2.2.8
+docker pull yuexiangliu93/webtrader00:latest
+docker run -p 9001:9001 -p 8081:8081 yuexiangliu93/webtrader00:latest
