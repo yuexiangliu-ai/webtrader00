@@ -190,3 +190,8 @@ docker run -it --entrypoint /bin/bash webtrader00:latest
 ls -la /app/v2.2.8
 docker pull yuexiangliu93/webtrader00:latest
 docker run -p 9001:9001 -p 8081:8081 yuexiangliu93/webtrader00:latest
+git credential-manager uninstall
+git credential-manager install
+git credential-osxkeychain erase
+git push
+yuexiangliu-ai
