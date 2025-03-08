@@ -15,9 +15,9 @@ WORKDIR /app
 COPY package.json ./
 COPY yarn.lock ./
 
-# Install yarn and dependencies
+# Install yarn and all dependencies (including devDependencies), then install global tools
 RUN npm install -g yarn && \
-    yarn install --production && \
+    yarn install && \
     npm install -g http-server grunt-cli
 
 # Copy all project files
