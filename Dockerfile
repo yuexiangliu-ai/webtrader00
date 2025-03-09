@@ -30,4 +30,4 @@ RUN yarn build
 EXPOSE 9001 8081
 
 # Start both the Webtrader app and mock WebSocket server from dist/compressed/v2.2.8
-CMD ["sh", "-c", "http-server dist/compressed -p 9001 --index & node mock_websocket.js"]
+CMD ["sh", "-c", "http-server dist/compressed -p 9001 --index index.html & node mock_websocket.js"]

@@ -51,20 +51,13 @@ wss.on('connection', (ws) => {
             }));
             setTimeout(() => {
                 ws.send(JSON.stringify({
-                    balance: {
-                        balance: 10000,
-                        currency: 'USD',
-                        loginid: 'CR123'
-                    },
+                    balance: { balance: 10000, currency: 'USD', loginid: 'CR123' },
                     echo_req: { balance: 1 },
                     msg_type: 'balance',
                     req_id: request.req_id ? request.req_id + 1 : undefined
                 }));
                 ws.send(JSON.stringify({
-                    transaction: {
-                        action: 'mock',
-                        amount: 0
-                    },
+                    transaction: { action: 'mock', amount: 0 },
                     echo_req: { transaction: 1 },
                     msg_type: 'transaction',
                     req_id: request.req_id ? request.req_id + 2 : undefined
@@ -72,13 +65,150 @@ wss.on('connection', (ws) => {
             }, 100);
         }
 
+        if (request.active_symbols === 'brief') {
+            ws.send(JSON.stringify({
+                active_symbols: [
+                    {
+                        symbol: 'frxEURUSD',
+                        display_name: 'EUR/USD',
+                        market: 'forex',
+                        market_display_name: 'Forex',
+                        submarket: 'major_pairs',
+                        submarket_display_name: 'Major Pairs',
+                        subgroup: 'pairs',
+                        subgroup_display_name: 'Pairs',
+                        pip: '0.0001',
+                        exchange_is_open: 1,
+                        is_trading_suspended: 0
+                    },
+                    {
+                        symbol: 'frxGBPUSD',
+                        display_name: 'GBP/USD',
+                        market: 'forex',
+                        market_display_name: 'Forex',
+                        submarket: 'major_pairs',
+                        submarket_display_name: 'Major Pairs',
+                        subgroup: 'pairs',
+                        subgroup_display_name: 'Pairs',
+                        pip: '0.0001',
+                        exchange_is_open: 1,
+                        is_trading_suspended: 0
+                    },
+                    {
+                        symbol: 'R_10',
+                        display_name: 'Volatility 10 Index',
+                        market: 'synthetic_index',
+                        market_display_name: 'Synthetic Indices',
+                        submarket: 'volatility_indices',
+                        submarket_display_name: 'Volatility Indices',
+                        subgroup: 'indices',
+                        subgroup_display_name: 'Indices',
+                        pip: '0.01',
+                        exchange_is_open: 1,
+                        is_trading_suspended: 0
+                    }
+                ],
+                echo_req: request,
+                msg_type: 'active_symbols',
+                req_id: request.req_id
+            }));
+        }
+
+        if (request.trading_times) {
+            ws.send(JSON.stringify({
+                trading_times: {
+                    markets: [
+                        {
+                            name: 'Forex',
+                            submarkets: [
+                                {
+                                    name: 'Major Pairs',
+                                    symbols: [
+                                        { symbol: 'frxEURUSD', times: { open: ['00:00'], close: ['23:59'] } },
+                                        { symbol: 'frxGBPUSD', times: { open: ['00:00'], close: ['23:59'] } }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            name: 'Synthetic Indices',
+                            submarkets: [
+                                {
+                                    name: 'Volatility Indices',
+                                    symbols: [
+                                        { symbol: 'R_10', times: { open: ['00:00'], close: ['23:59'] } }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                echo_req: request,
+                msg_type: 'trading_times',
+                req_id: request.req_id
+            }));
+        }
+
+        if (request.contracts_for) {
+            const symbol = request.contracts_for;
+            ws.send(JSON.stringify({
+                contracts_for: {
+                    available: [
+                        {
+                            contract_type: 'CALL',
+                            contract_category: 'callput',
+                            contract_category_display: 'Up/Down',
+                            contract_display: 'rise',
+                            symbol: symbol,
+                            min_contract_duration: '5t',
+                            max_contract_duration: '365d',
+                            expiry_type: 'tick',
+                            barriers: 0,
+                            sentiment: 'up',
+                            start_type: 'spot',
+                            payout_limit: 10000
+                        },
+                        {
+                            contract_type: 'PUT',
+                            contract_category: 'callput',
+                            contract_category_display: 'Up/Down',
+                            contract_display: 'fall',
+                            symbol: symbol,
+                            min_contract_duration: '5t',
+                            max_contract_duration: '365d',
+                            expiry_type: 'tick',
+                            barriers: 0,
+                            sentiment: 'down',
+                            start_type: 'spot',
+                            payout_limit: 10000
+                        },
+                        {
+                            contract_type: 'CALL',
+                            contract_category: 'callput',
+                            contract_category_display: 'Up/Down',
+                            contract_display: 'higher',
+                            symbol: symbol,
+                            min_contract_duration: '1m',
+                            max_contract_duration: '365d',
+                            expiry_type: 'intraday',
+                            barriers: 1,
+                            barrier: '0.1',
+                            sentiment: 'up',
+                            start_type: 'spot',
+                            payout_limit: 10000
+                        }
+                    ],
+                    spot: '1.23456'  // Mock spot price
+                },
+                echo_req: request,
+                msg_type: 'contracts_for',
+                req_id: request.req_id
+            }));
+        }
+
         if (request.balance === 1) {
             ws.send(JSON.stringify({
-                balance: {
-                    balance: 10000,
-                    currency: 'USD',
-                    loginid: 'CR123'
-                },
+                balance: { balance: 10000, currency: 'USD', loginid: 'CR123' },
                 echo_req: request,
                 msg_type: 'balance',
                 req_id: request.req_id
@@ -87,10 +217,7 @@ wss.on('connection', (ws) => {
 
         if (request.transaction === 1) {
             ws.send(JSON.stringify({
-                transaction: {
-                    action: 'mock',
-                    amount: 0
-                },
+                transaction: { action: 'mock', amount: 0 },
                 echo_req: request,
                 msg_type: 'transaction',
                 req_id: request.req_id
@@ -115,48 +242,9 @@ wss.on('connection', (ws) => {
             }));
         }
 
-        if (request.active_symbols === 'brief') {
-            ws.send(JSON.stringify({
-                active_symbols: {
-                    active_symbols: [
-                        { symbol: 'frxEURUSD', display_name: 'EUR/USD', market: 'forex', pip: '0.0001' }
-                    ]
-                },
-                echo_req: request,
-                msg_type: 'active_symbols',
-                req_id: request.req_id
-            }));
-        }
-
-        if (request.trading_times) {
-            ws.send(JSON.stringify({
-                trading_times: {
-                    markets: [
-                        {
-                            name: 'Forex',
-                            submarkets: [
-                                {
-                                    name: 'Major Pairs',
-                                    symbols: [
-                                        { symbol: 'frxEURUSD', times: { open: ['00:00'], close: ['23:59'] } }
-                                    ]
-                                }
-                            ]
-                        }
-                    ]
-                },
-                echo_req: request,
-                msg_type: 'trading_times',
-                req_id: request.req_id
-            }));
-        }
-
         if (request.landing_company_details) {
             ws.send(JSON.stringify({
-                landing_company_details: {
-                    name: 'maltainvest',
-                    address: ['Mock Address']
-                },
+                landing_company_details: { name: 'maltainvest', address: ['Mock Address'] },
                 echo_req: request,
                 msg_type: 'landing_company_details',
                 req_id: request.req_id
@@ -165,10 +253,7 @@ wss.on('connection', (ws) => {
 
         if (request.get_account_status === 1) {
             ws.send(JSON.stringify({
-                get_account_status: {
-                    status: ['authenticated'],
-                    currency_type: 'real'
-                },
+                get_account_status: { status: ['authenticated'], currency_type: 'real' },
                 echo_req: request,
                 msg_type: 'get_account_status',
                 req_id: request.req_id
@@ -177,10 +262,7 @@ wss.on('connection', (ws) => {
 
         if (request.get_settings === 1) {
             ws.send(JSON.stringify({
-                get_settings: {
-                    email: 'mock@example.com',
-                    country: 'us'
-                },
+                get_settings: { email: 'mock@example.com', country: 'us' },
                 echo_req: request,
                 msg_type: 'get_settings',
                 req_id: request.req_id
@@ -216,10 +298,7 @@ wss.on('connection', (ws) => {
 
         if (request.landing_company) {
             ws.send(JSON.stringify({
-                landing_company: {
-                    name: 'maltainvest',
-                    financial_company: { name: 'maltainvest' }
-                },
+                landing_company: { name: 'maltainvest', financial_company: { name: 'maltainvest' } },
                 echo_req: request,
                 msg_type: 'landing_company',
                 req_id: request.req_id
