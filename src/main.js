@@ -29,6 +29,7 @@ window.requirejs.config({
         "chosen": "lib/chosen-js/chosen.jquery",
         "highstock-release": "lib/highstock-release",
         "jquery-ui-touch-punch": "lib/jquery-ui-touch-punch/jquery.ui.touch-punch.min",
+        "portfolioAnalysis": "portfolioAnalysis",
     },
     map: {
         "*": {
@@ -267,6 +268,14 @@ require(["jquery", "text!i18n/" + i18n_name + ".json"], function($, lang_json) {
                   copytrade.init(elem);
                   elem.click();
               });
+
+            // Inside registerMenusCallback in main.js
+            load_ondemand($navMenu.find("a.portfolio-analysis-view"), "click", "Loading Portfolio Analysis ...".i18n(), "portfolioAnalysis", function(portfolioAnalysis) {
+                var $elem = $navMenu.find("a.portfolio-analysis-view");
+                var instance = new portfolioAnalysis();
+                instance.init($elem); // Initialize when clicked
+                $elem.click(); // Trigger the click to show the window
+            });
         };
         
         require(["navigation/navigation", "websockets/binary_websockets", "jquery-ui", "css!main.css", "css!binary-style"], function(navigation, websockets) {

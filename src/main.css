@@ -598,3 +598,59 @@ label.checkbox input:checked ~ span.check {
     display: flex;
     align-items: center;
 }
+
+/* src/main.css */
+/* Menu item styling */
+#nav-menu .portfolio-analysis {
+    display: block;
+    padding: 10px 15px;
+    color: white;
+    text-decoration: none;
+    background-color: #1a2a44;
+}
+
+#nav-menu .portfolio-analysis:hover {
+    background-color: #2a4060;
+}
+
+#nav-menu .portfolio-analysis>ul {
+    display: none;
+    position: absolute;
+    background: #1a2a44;
+    padding: 0;
+    margin: 0;
+}
+
+#nav-menu .portfolio-analysis>ul>li {
+    padding: 8px 15px;
+}
+
+#nav-menu .portfolio-analysis>ul>li a {
+    color: white;
+    text-decoration: none;
+}
+
+#nav-menu .portfolio-analysis>ul>li:hover {
+    background-color: #2a4060;
+}
+
+/* src/main.css */
+.portfolio-analysis {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  .portfolio-analysis h1 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  .portfolio-analysis .close {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background: #ccc;
+    border: none;
+    cursor: pointer;
+  }
+  .portfolio-analysis .close:hover {
+    background: #aaa;
+  }
+

@@ -12,7 +12,8 @@ const menu_selectors = [
    '.trade',
    '.instruments',
    '.resources',
-   '.workspace'
+   '.workspace',
+   '.portfolio-analysis' // Add this
 ];
 
 const getType = (acc) => {
